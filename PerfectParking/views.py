@@ -26,9 +26,13 @@ class WebPages:
     PRIVACY_POLICY = "website/privacy-policy.html"
 
 
+# Example view function
 def index(request):
-    parking_lots: list = ParkingLot.objects.all()
-    return render(request, WebPages.HOME_PAGE, {"parking_lots": parking_lots})
+    parking_lots = ParkingLot.objects.all()  # Ensure ParkingLot model is imported and queried
+    context = {
+        'parking_lots': parking_lots
+    }
+    return render(request, 'website/index.html', context)
 
 
 def login_user(request):
@@ -49,8 +53,8 @@ def login_user(request):
         username = request.POST["username"]
         password = request.POST["password"]
         tuser = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
+        if tuser is not None:
+            login(request, tuser)
             return redirect(WebPaths.PARKING_LOTS)
         else:
             return redirect(WebPaths.LOGIN)
@@ -78,7 +82,9 @@ def parking_lots(request):
     Returns:
         _type_: _description_
     """
-    parking_lots: list = ParkingLot.objects.all()
+    from django.db.models.query import QuerySet  # Ensure this import is at the top of the file
+
+    parking_lots: QuerySet[ParkingLot] = ParkingLot.objects.all()
     return render(request, WebPages.PARKING_LOTS, {"parking_lots": parking_lots})
 
 
@@ -102,7 +108,8 @@ def parking_lot_monitors(request): # Search page
     Returns:
         _type_: _description_
     """
-    parking_lot_monitor_list: list = ParkingLotMonitor.objects.all()
+    from django.db.models.query import QuerySet  # Ensure this import is at the top of the file
+    parking_lot_monitor_list: QuerySet[ParkingLotMonitor] = ParkingLotMonitor.objects.all()
 
     if request.method == "POST":  # FORM SUBMITTED
         latitude = request.POST["latitude"]

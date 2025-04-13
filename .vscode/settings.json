@@ -26,6 +26,7 @@
     "sqlmigrate",
     "startapp",
     "startproject",
+    "tuser",
     "viewsets"
   ],
   "plantuml.diagramsRoot": "docs\\diagrams",

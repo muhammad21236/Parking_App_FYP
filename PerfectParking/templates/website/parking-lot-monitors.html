@@ -1,0 +1,261 @@
+{% extends 'master.html' %}
+{% load get_distance_from_lat_lang %}
+{% load humanize %}
+
+{% block title %}Find Parking - PerfectParking{% endblock %}
+
+{% block head %}
+<style>
+    .search-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0.5rem;
+    }
+    
+    .search-card {
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .search-table {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .search-table thead {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .search-table th {
+        padding: 1rem;
+        font-weight: 500;
+    }
+    
+    .search-table td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+    }
+    
+    .search-table tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    
+    .search-table tr:hover {
+        background-color: #e9f0f7;
+    }
+    
+    .search-table a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .search-table a:hover {
+        color: var(--secondary-color);
+        text-decoration: underline;
+    }
+    
+    .vacancy-high {
+        color: #28a745;
+        font-weight: 600;
+    }
+    
+    .vacancy-medium {
+        color: #ffc107;
+        font-weight: 600;
+    }
+    
+    .vacancy-low {
+        color: #dc3545;
+        font-weight: 600;
+    }
+    
+    .paid-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .paid-yes {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .paid-no {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .last-updated {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    @media (max-width: 768px) {
+        .search-table-container {
+            overflow-x: auto;
+        }
+        
+        .search-table {
+            min-width: 900px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="search-header text-center">
+        <h1 class="fw-bold mb-3"><i class="fas fa-search-location me-2"></i>Find Parking</h1>
+        <p class="lead mb-0">Discover available parking spots near you</p>
+    </div>
+
+    <div class="search-card">
+        <div class="card-body">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                <div class="row align-items-center">
+                    <div class="col-md-8 mb-3 mb-md-0">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                            <input type="text" class="form-control form-control-lg" placeholder="Enter your location or use current position">
+                            <input type="hidden" name="latitude" id="latitude"/>
+                            <input type="hidden" name="longitude" id="longitude"/>
+                        </div>
+                        <div id="geo-error" class="text-danger small mt-2"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" id="search-near-me-button" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-search me-2"></i>Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if parking_lot_monitors %}
+    <div class="search-table-container">
+        <table class="table search-table" aria-describedby="searchResultsDesc">
+            <thead>
+                <tr>
+                    <th class="ps-4">Name</th>
+                    <th>Address</th>
+                    <th>Status</th>
+                    <th>Spaces</th>
+                    <th>Vacancy</th>
+                    {% if user_point %}
+                    <th>Distance</th>
+                    {% endif %}
+                    <th class="pe-4">Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for parking_monitor in parking_lot_monitors %}
+                <tr>
+                    <td class="ps-4">
+                        <a href="{% url 'parking-lot-monitor' parking_monitor.id %}">
+                            <i class="fas fa-parking me-2" style="color: var(--primary-color);"></i>
+                            {{ parking_monitor.name }}
+                        </a>
+                    </td>
+                    <td>{{ parking_monitor.parkingLot.address }}</td>
+                    <td>
+                        <span class="paid-badge {% if parking_monitor.parkingLot.isPaidParking %}paid-yes{% else %}paid-no{% endif %}">
+                            {% if parking_monitor.parkingLot.isPaidParking %}Paid{% else %}Free{% endif %}
+                        </span>
+                        <span class="ms-2">{{ parking_monitor.parkingLot.hours|default:"24/7" }}</span>
+                    </td>
+                    <td>
+                        {{ parking_monitor.free_parking_spaces }} / {{ parking_monitor.total_parking_spaces }} free
+                    </td>
+                    <td>
+                        {% with vacancy=parking_monitor.get_vacancy_rate %}
+                        <span class="{% if vacancy > 70 %}vacancy-high{% elif vacancy > 30 %}vacancy-medium{% else %}vacancy-low{% endif %}">
+                            {{ vacancy }}%
+                        </span>
+                        {% endwith %}
+                    </td>
+                    {% if user_point %}
+                    <td>
+                        {% get_distance_from_lat_lang parking_monitor user_point.latitude user_point.longitude %} km
+                    </td>
+                    {% endif %}
+                    <td class="pe-4 last-updated">
+                        {{ parking_monitor.dateTimeLastUpdated|naturaltime }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle me-2"></i> No parking results found. Try adjusting your search.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Geolocation functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        var displayElement = document.getElementById("geo-error");
+        var searchNearMeButton = document.getElementById("search-near-me-button");
+        var locationInput = document.querySelector('input[type="text"]');
+
+        function setPosition() {
+            if (navigator && navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        document.getElementById("latitude").value = position.coords.latitude;
+                        document.getElementById("longitude").value = position.coords.longitude;
+                        locationInput.value = "Current Location";
+                        displayElement.textContent = "";
+                        searchNearMeButton.disabled = false;
+                    },
+                    function(error) {
+                        var errorMessage = "Unable to get your location: ";
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage += "Location permission denied.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage += "Location information unavailable.";
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage += "Location request timed out.";
+                                break;
+                            case error.UNKNOWN_ERROR:
+                                errorMessage += "An unknown error occurred.";
+                                break;
+                        }
+                        displayElement.textContent = errorMessage;
+                        searchNearMeButton.disabled = true;
+                    },
+                    { enableHighAccuracy: true, timeout: 5000 }
+                );
+            } else {
+                displayElement.textContent = "Geolocation is not supported by this browser.";
+                searchNearMeButton.disabled = true;
+            }
+        }
+
+        // Set position on page load
+        setPosition();
+
+        // Add click handler for the location input to try again
+        locationInput.addEventListener('click', function() {
+            setPosition();
+        });
+    });
+</script>
+{% endblock %}

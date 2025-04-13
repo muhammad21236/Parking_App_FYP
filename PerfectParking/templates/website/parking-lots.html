@@ -1,0 +1,176 @@
+{% extends 'master.html' %}
+
+{% block title %}Parking Lots - PerfectParking{% endblock %}
+
+{% block head %}
+<style>
+    .parking-lots-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0.5rem;
+    }
+    
+    .parking-table {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .parking-table thead {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .parking-table th {
+        padding: 1rem;
+        font-weight: 500;
+    }
+    
+    .parking-table td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+    }
+    
+    .parking-table tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    
+    .parking-table tr:hover {
+        background-color: #e9f0f7;
+    }
+    
+    .parking-table a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .parking-table a:hover {
+        color: var(--secondary-color);
+        text-decoration: underline;
+    }
+    
+    .parking-img {
+        width: 50px;
+        height: 30px;
+        object-fit: cover;
+        border-radius: 0.25rem;
+        transition: transform 0.2s ease;
+    }
+    
+    .parking-img:hover {
+        transform: scale(1.5);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        z-index: 10;
+        position: relative;
+    }
+    
+    .paid-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .paid-yes {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .paid-no {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .coordinates {
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    @media (max-width: 768px) {
+        .parking-table-container {
+            overflow-x: auto;
+        }
+        
+        .parking-table {
+            min-width: 700px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="parking-lots-header text-center">
+        <div class="container">
+            <h1 class="fw-bold mb-3"><i class="fas fa-parking me-2"></i>Parking Lots</h1>
+            <p class="lead mb-0">Find and manage parking locations in your area</p>
+        </div>
+    </div>
+
+    <div class="parking-table-container">
+        <table class="table parking-table" aria-describedby="parkingLotsDesc">
+            <thead>
+                <tr>
+                    <th class="text-nowrap ps-4">Name</th>
+                    <th class="text-nowrap">Address</th>
+                    <th class="text-nowrap">Hours</th>
+                    <th class="text-nowrap">Paid Parking</th>
+                    <th class="text-nowrap">Coordinates</th>
+                    <th class="text-nowrap pe-4">Image</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for parking_lot in parking_lots %}
+                <tr>
+                    <td class="ps-4">
+                        <a href="{% url 'parking-lot' parking_lot.id %}">
+                            <i class="fas fa-map-marker-alt me-2" style="color: var(--primary-color);"></i>
+                            {{ parking_lot.name }}
+                        </a>
+                    </td>
+                    <td>{{ parking_lot.address }}</td>
+                    <td>{{ parking_lot.hours|default:"24/7" }}</td>
+                    <td>
+                        <span class="paid-badge {% if parking_lot.isPaidParking %}paid-yes{% else %}paid-no{% endif %}">
+                            {% if parking_lot.isPaidParking %}Yes{% else %}No{% endif %}
+                        </span>
+                    </td>
+                    <td class="coordinates">
+                        <span title="Latitude">{{ parking_lot.latitude|floatformat:5 }}</span><br>
+                        <span title="Longitude">{{ parking_lot.longitude|floatformat:5 }}</span>
+                    </td>
+                    <td class="pe-4">
+                        {% if parking_lot.image %}
+                        <img src="{{ parking_lot.image.url }}" 
+                             alt="Image of {{ parking_lot.name }}" 
+                             class="parking-img"
+                             data-bs-toggle="tooltip" 
+                             data-bs-placement="top" 
+                             title="{{ parking_lot.name }}">
+                        {% else %}
+                        <span class="text-muted">No image</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    })
+</script>
+{% endblock %}

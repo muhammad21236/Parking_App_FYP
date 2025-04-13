@@ -1,0 +1,268 @@
+{% extends 'master.html' %}
+{% load humanize %}
+
+{% block title %}{{ parking_lot_monitor.name }} - PerfectParking{% endblock %}
+
+{% block head %}
+<style>
+    .monitor-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0.5rem;
+    }
+    
+    .detail-card {
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .detail-card-header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0 !important;
+    }
+    
+    .detail-card-body {
+        padding: 1.5rem;
+    }
+    
+    .availability-badge {
+        font-size: 1.1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .high-availability {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .medium-availability {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .low-availability {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .dl-horizontal dt {
+        float: left;
+        width: 160px;
+        clear: left;
+        text-align: right;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 500;
+        color: var(--dark-color);
+    }
+    
+    .dl-horizontal dd {
+        margin-left: 180px;
+        margin-bottom: 1rem;
+    }
+    
+    .map-container {
+        height: 400px;
+        width: 100%;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .monitor-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .monitor-image:hover {
+        transform: scale(1.02);
+    }
+    
+    .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    
+    .status-active {
+        background-color: #28a745;
+    }
+    
+    .status-inactive {
+        background-color: #dc3545;
+    }
+    
+    @media (max-width: 768px) {
+        .dl-horizontal dt {
+            float: none;
+            width: auto;
+            text-align: left;
+        }
+        
+        .dl-horizontal dd {
+            margin-left: 0;
+        }
+        
+        .map-container {
+            height: 300px;
+        }
+        
+        .monitor-image {
+            height: 200px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="monitor-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <h1 class="fw-bold mb-2">
+                    <i class="fas fa-parking me-2"></i>{{ parking_lot_monitor.name }}
+                </h1>
+                <span class="availability-badge 
+                    {% if parking_lot_monitor.get_vacancy_rate > 70 %}high-availability
+                    {% elif parking_lot_monitor.get_vacancy_rate > 30 %}medium-availability
+                    {% else %}low-availability{% endif %}">
+                    {{ parking_lot_monitor.get_vacancy_rate }}% Vacancy
+                </span>
+            </div>
+            <p class="lead mt-2 mb-0">
+                <i class="fas fa-map-marker-alt me-2"></i>{{ parking_lot_monitor.parkingLot.address }}
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="detail-card">
+                <div class="detail-card-header">
+                    <h2 class="h5 mb-0"><i class="fas fa-car me-2"></i>Parking Availability</h2>
+                </div>
+                <div class="detail-card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="status-indicator 
+                                    {% if parking_lot_monitor.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                </span>
+                                <h3 class="h5 mb-0">Current Status</h3>
+                            </div>
+                            <p class="ms-4">
+                                {% if parking_lot_monitor.is_active %}
+                                <span class="text-success">Active</span> - Receiving updates
+                                {% else %}
+                                <span class="text-danger">Inactive</span> - No recent updates
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h3 class="h5">Spaces Available</h3>
+                            <div class="display-4 fw-bold">
+                                {{ parking_lot_monitor.free_parking_spaces }}
+                                <small class="text-muted fs-6">/ {{ parking_lot_monitor.parkingLot.parking_spaces }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <dl class="dl-horizontal">
+                        <dt>Last Updated</dt>
+                        <dd>{{ parking_lot_monitor.dateTimeLastUpdated|naturaltime }}</dd>
+                        
+                        <dt>Parking Type</dt>
+                        <dd>
+                            {% if parking_lot_monitor.parkingLot.isPaidParking %}
+                            <span class="badge bg-danger">Paid Parking</span>
+                            {% else %}
+                            <span class="badge bg-success">Free Parking</span>
+                            {% endif %}
+                        </dd>
+                        
+                        <dt>Operating Hours</dt>
+                        <dd>{{ parking_lot_monitor.parkingLot.hours|default:"Open 24/7" }}</dd>
+                        
+                        <dt>Coordinates</dt>
+                        <dd>
+                            <span class="text-muted font-monospace">
+                                {{ parking_lot_monitor.latitude|floatformat:5 }}, {{ parking_lot_monitor.longitude|floatformat:5 }}
+                            </span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="detail-card">
+                <div class="detail-card-header">
+                    <h2 class="h5 mb-0"><i class="fas fa-map-marked-alt me-2"></i>Location</h2>
+                </div>
+                <div class="detail-card-body p-0">
+                    <div class="map-container">
+                        <iframe 
+                            title="Map of {{ parking_lot_monitor.name }}"
+                            width="100%" 
+                            height="100%" 
+                            frameborder="0" 
+                            scrolling="no" 
+                            marginheight="0" 
+                            marginwidth="0"
+                            src="https://maps.google.com/maps?q={{ parking_lot_monitor.latitude }},{{ parking_lot_monitor.longitude }}&z=17&ie=UTF8&output=embed&markers=color:red|{{ parking_lot_monitor.latitude }},{{ parking_lot_monitor.longitude }}">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+            
+            {% if parking_lot_monitor.image %}
+            <div class="detail-card mt-4">
+                <div class="detail-card-header">
+                    <h2 class="h5 mb-0"><i class="fas fa-camera me-2"></i>Parking Lot Image</h2>
+                </div>
+                <div class="detail-card-body text-center">
+                    <img src="{{ parking_lot_monitor.image.url }}" 
+                         alt="{{ parking_lot_monitor.name }}" 
+                         class="monitor-image"
+                         data-bs-toggle="modal" 
+                         data-bs-target="#imageModal">
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ parking_lot_monitor.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="{{ parking_lot_monitor.image.url }}" 
+                     alt="{{ parking_lot_monitor.name }}" 
+                     class="img-fluid rounded">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

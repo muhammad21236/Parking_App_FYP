@@ -1,0 +1,260 @@
+{% extends 'master.html' %}
+
+{% block title %}{{ parking_lot.name }} - PerfectParking{% endblock %}
+
+{% block head %}
+<style>
+    .parking-detail-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0.5rem;
+    }
+    
+    .detail-card {
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+    
+    .detail-card-header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 1rem 1.5rem;
+    }
+    
+    .detail-card-body {
+        padding: 1.5rem;
+    }
+    
+    .dl-horizontal dt {
+        float: left;
+        width: 120px;
+        clear: left;
+        text-align: right;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 500;
+        color: var(--dark-color);
+    }
+    
+    .dl-horizontal dd {
+        margin-left: 140px;
+    }
+    
+    .map-container {
+        height: 400px;
+        width: 100%;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .gallery-img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .gallery-img:hover {
+        transform: scale(1.03);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-left: 1rem;
+    }
+    
+    .status-open {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-closed {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    @media (max-width: 768px) {
+        .dl-horizontal dt {
+            float: none;
+            width: auto;
+            text-align: left;
+            margin-bottom: 0.25rem;
+        }
+        
+        .dl-horizontal dd {
+            margin-left: 0;
+            margin-bottom: 1rem;
+        }
+        
+        .map-container {
+            height: 300px;
+        }
+        
+        .gallery-img {
+            height: 150px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+    <div class="parking-detail-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="fw-bold mb-0">
+                    <i class="fas fa-parking me-2"></i>{{ parking_lot.name }}
+                </h1>
+                <span class="status-badge {% if parking_lot.is_open %}status-open{% else %}status-closed{% endif %}">
+                    {% if parking_lot.is_open %}OPEN NOW{% else %}CLOSED{% endif %}
+                </span>
+            </div>
+            <p class="lead mt-2 mb-0">{{ parking_lot.address }}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="detail-card">
+                <div class="detail-card-header">
+                    <h2 class="h5 mb-0"><i class="fas fa-info-circle me-2"></i>Details</h2>
+                </div>
+                <div class="detail-card-body">
+                    <dl class="dl-horizontal">
+                        <dt>Address</dt>
+                        <dd>{{ parking_lot.address }}</dd>
+                        
+                        <dt>Hours</dt>
+                        <dd>{{ parking_lot.hours|default:"Open 24/7" }}</dd>
+                        
+                        <dt>Total Spaces</dt>
+                        <dd>{{ parking_lot.parking_spaces|default:"Not specified" }}</dd>
+                        
+                        <dt>Parking Type</dt>
+                        <dd>
+                            {% if parking_lot.isPaidParking %}
+                            <span class="badge bg-danger">Paid Parking</span>
+                            {% else %}
+                            <span class="badge bg-success">Free Parking</span>
+                            {% endif %}
+                        </dd>
+                        
+                        <dt>Coordinates</dt>
+                        <dd>
+                            <span class="text-muted font-monospace">
+                                {{ parking_lot.latitude|floatformat:5 }}, {{ parking_lot.longitude|floatformat:5 }}
+                            </span>
+                        </dd>
+                    </dl>
+                    
+                    {% if parking_lot.description %}
+                    <div class="mt-4">
+                        <h3 class="h5">Description</h3>
+                        <p>{{ parking_lot.description }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="detail-card">
+                <div class="detail-card-header">
+                    <h2 class="h5 mb-0"><i class="fas fa-map-marked-alt me-2"></i>Location</h2>
+                </div>
+                <div class="detail-card-body p-0">
+                    <div id="map" class="map-container">
+                        <iframe 
+                            title="Map of {{ parking_lot.name }}"
+                            width="100%" 
+                            height="100%" 
+                            frameborder="0" 
+                            scrolling="no" 
+                            marginheight="0" 
+                            marginwidth="0"
+                            src="https://maps.google.com/maps?q={{ parking_lot.latitude }},{{ parking_lot.longitude }}&z=17&ie=UTF8&output=embed&markers=color:red|{{ parking_lot.latitude }},{{ parking_lot.longitude }}">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if parking_lot.image %}
+    <div class="detail-card mt-4">
+        <div class="detail-card-header">
+            <h2 class="h5 mb-0"><i class="fas fa-images me-2"></i>Images</h2>
+        </div>
+        <div class="detail-card-body">
+            <div class="gallery">
+                <img src="{{ parking_lot.image.url }}" 
+                     alt="{{ parking_lot.name }}" 
+                     class="gallery-img"
+                     data-bs-toggle="modal" 
+                     data-bs-target="#imageModal"
+                     data-img="{{ parking_lot.image.url }}">
+                
+                <!-- Add more images here if available -->
+                <!-- Example for multiple images:
+                {% for image in parking_lot.images.all %}
+                <img src="{{ image.url }}" ... >
+                {% endfor %}
+                -->
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ parking_lot.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" alt="" class="img-fluid rounded">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize image modal
+    document.addEventListener('DOMContentLoaded', function() {
+        var imageModal = document.getElementById('imageModal');
+        if (imageModal) {
+            imageModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var imgSrc = button.getAttribute('data-img');
+                var modalImg = document.getElementById('modalImage');
+                modalImg.src = imgSrc;
+                modalImg.alt = button.alt;
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{
+  "cSpell.words": [
+    "authtoken",
+    "conda",
+    "Consolas",
+    "createsuperuser",
+    "dataframe",
+    "djangorestframework",
+    "dtype",
+    "embedgooglemap",
+    "geopy",
+    "gmap",
+    "Hartstonge",
+    "imread",
+    "imshow",
+    "imwrite",
+    "LBUTTONDOWN",
+    "makemigrations",
+    "mapouter",
+    "matplotlib",
+    "ndarray",
+    "perfectparking",
+    "pyplot",
+    "Rhys",
+    "runserver",
+    "sqlmigrate",
+    "startapp",
+    "startproject",
+    "viewsets"
+  ],
+  "plantuml.diagramsRoot": "docs\\diagrams",
+  "plantuml.exportFormat": "png",
+  "plantuml.exportIncludeFolderHeirarchy": false,
+  "plantuml.exportOutDir": "docs\\diagrams",
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "python.formatting.provider": "black",
+  "python.testing.unittestArgs": [
+    "-v",
+    "-s",
+    "./PerfectParkingClient",
+    "-p",
+    "*tests.py"
+  ],
+  "python.testing.pytestEnabled": false,
+  "python.testing.unittestEnabled": true,
+  "python.analysis.typeCheckingMode": "basic"
+}

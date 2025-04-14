@@ -151,9 +151,9 @@ endblock %} {% block head %}
         {% for field in form %} {% if field.name not in
         'first_name,last_name,email' %}
         <div class="mb-3">
-          <label for="{{ field.id_for_label }}" class="form-label"
-            >{{ field.label }}</label
-          >
+          <label for="{{ field.id_for_label }}" class="form-label">
+            {{ field.label }}
+          </label>
           {{ field }} {% if field.errors %}
           <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
           {% endif %} {% if field.help_text %}
@@ -182,14 +182,9 @@ endblock %} {% block head %}
 </div>
 
 <script>
-  // Enhanced form validation
   (function () {
     "use strict";
-
-    // Fetch all the forms we want to apply validation to
     var forms = document.querySelectorAll(".needs-validation");
-
-    // Loop over them and prevent submission
     Array.prototype.slice.call(forms).forEach(function (form) {
       form.addEventListener(
         "submit",
@@ -198,13 +193,11 @@ endblock %} {% block head %}
             event.preventDefault();
             event.stopPropagation();
           }
-
           form.classList.add("was-validated");
         },
         false
       );
 
-      // Add real-time validation on blur
       form.querySelectorAll("input").forEach((input) => {
         input.addEventListener("blur", () => {
           if (input.checkValidity()) {

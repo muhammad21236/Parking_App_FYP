@@ -10,7 +10,9 @@ def build_all_config_ini_content() -> str:
         A string containing the configuration content for all parking lot monitors.
     """
     text: str = ""
-    parking_lot_monitors: list(ParkingLotMonitor) = ParkingLotMonitor.objects.all()
+    from typing import List
+
+    parking_lot_monitors: List[ParkingLotMonitor] = list(ParkingLotMonitor.objects.all())
     for parking_lot_monitor in parking_lot_monitors:
         text += build_config_ini_content(parking_lot_monitor)+"\n\n"
     return text

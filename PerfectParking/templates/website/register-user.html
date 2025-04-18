@@ -1,6 +1,5 @@
-{% extends 'master.html' %} {% block title %}Register - PerfectParking{%
-endblock %} {% block head %}
-<style>
+{% extends 'master.html' %} {% block title %}Register - PerfectParking{% endblock %} {% block head %}
+<style> 
   .registration-card {
     max-width: 600px;
     margin: 2rem auto;
@@ -148,8 +147,7 @@ endblock %} {% block head %}
           </div>
         </div>
 
-        {% for field in form %} {% if field.name not in
-        'first_name,last_name,email' %}
+        {% for field in form %} {% if field.name not in 'first_name,last_name,email' %}
         <div class="mb-3">
           <label for="{{ field.id_for_label }}" class="form-label">
             {{ field.label }}

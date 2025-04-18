@@ -10,8 +10,8 @@ from cv2 import (
     drawContours,
     GaussianBlur,
     imshow,
-    Laplacian,
-    Mat,
+    Laplacian,  # noqa: F401
+    Mat,  # noqa: F401
     VideoCapture,
 )
 from numpy import ndarray

@@ -8,7 +8,7 @@ from cv2 import (
     imshow,
     imwrite,
     INTER_CUBIC,
-    Mat,
+    Mat,  # noqa: F401
     resize,
     VideoCapture,
     waitKey,

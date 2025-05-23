@@ -26,7 +26,7 @@ This App aims to create a parking system that will replace outdated systems and 
 Clone the repository
 
 ```bash
-https://github.com/muhammad21236/Parking_App_FYP.git
+git clone https://github.com/muhammad21236/Parking_App_FYP.git
 ```
 
 There are three applications in this project: the website server, a client parking monitor and a mock client parking monitor.

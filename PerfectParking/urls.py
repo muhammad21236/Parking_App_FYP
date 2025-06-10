@@ -5,6 +5,7 @@ from PerfectParking.views import custom_logout
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path('map/', views.map_view, name='map'),
     path(WebPaths.ROOT, views.index, name='home'),
     path('logout-user/', views.logout_user, name='logout-user'),
 

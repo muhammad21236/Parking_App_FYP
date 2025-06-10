@@ -1,4 +1,5 @@
 """This module contains the views for the Perfect Parking website."""
+
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login
@@ -7,6 +8,52 @@ from django.contrib.auth import logout
 from .models import ParkingLot, ParkingLotMonitor
 from . import WebPaths
 from .utility import record_user_query
+import json
+from django.conf import settings
+
+def map_view(request):
+    return render(request, 'map_template.html', {
+        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY
+    })
+
+
+
+def home_view(request):  # You can name this whatever makes sense
+    # Get all parking lots from database
+    parking_lots = ParkingLot.objects.all()
+
+    # Prepare JSON data for the map
+    locations = []
+    for lot in parking_lots:
+        # Handle possible None values for latitude/longitude
+        lat = float(lot.latitude) if lot.latitude else 0.0
+        lng = float(lot.longitude) if lot.longitude else 0.0
+
+        # Handle vacancy rate (attribute or default)
+        try:
+            vacancy = float(
+                getattr(lot, "vacancy", 0.0)
+            )  # Use 'vacancy' attribute or default to 0.0
+        except (TypeError, AttributeError):
+            vacancy = 0.0
+
+        locations.append(
+            {
+                "lat": lat,
+                "lng": lng,
+                "name": lot.name,
+                "address": lot.address,
+                "id": lot.id,
+                "vacancy": vacancy,
+                "isPaid": bool(lot.isPaidParking),  # Convert to boolean
+            }
+        )
+
+    context = {
+        "parking_lots": parking_lots,  # For HTML cards
+        "locations_json": json.dumps(locations),  # For JavaScript map
+    }
+    return render(request, "your_template.html", context)
 
 
 def custom_logout(request):
@@ -28,11 +75,11 @@ class WebPages:
 
 # Example view function
 def index(request):
-    parking_lots = ParkingLot.objects.all()  # Ensure ParkingLot model is imported and queried
-    context = {
-        'parking_lots': parking_lots
-    }
-    return render(request, 'website/index.html', context)
+    parking_lots = (
+        ParkingLot.objects.all()
+    )  # Ensure ParkingLot model is imported and queried
+    context = {"parking_lots": parking_lots}
+    return render(request, "website/index.html", context)
 
 
 def login_user(request):
@@ -82,7 +129,9 @@ def parking_lots(request):
     Returns:
         _type_: _description_
     """
-    from django.db.models.query import QuerySet  # Ensure this import is at the top of the file
+    from django.db.models.query import (
+        QuerySet,
+    )  # Ensure this import is at the top of the file
 
     parking_lots: QuerySet[ParkingLot] = ParkingLot.objects.all()
     return render(request, WebPages.PARKING_LOTS, {"parking_lots": parking_lots})
@@ -99,7 +148,7 @@ def parking_lot_monitor(request, parking_lot_monitor_id):
     )
 
 
-def parking_lot_monitors(request): # Search page
+def parking_lot_monitors(request):  # Search page
     """Builds the parking lot monitors page.
 
     Args:
@@ -108,8 +157,13 @@ def parking_lot_monitors(request): # Search page
     Returns:
         _type_: _description_
     """
-    from django.db.models.query import QuerySet  # Ensure this import is at the top of the file
-    parking_lot_monitor_list: QuerySet[ParkingLotMonitor] = ParkingLotMonitor.objects.all()
+    from django.db.models.query import (
+        QuerySet,
+    )  # Ensure this import is at the top of the file
+
+    parking_lot_monitor_list: QuerySet[ParkingLotMonitor] = (
+        ParkingLotMonitor.objects.all()
+    )
 
     if request.method == "POST":  # FORM SUBMITTED
         latitude = request.POST["latitude"]
@@ -129,9 +183,11 @@ def parking_lot_monitors(request): # Search page
         {"parking_lot_monitors": parking_lot_monitor_list},
     )
 
+
 def privacy_policy(request):
     """Builds the privacy policy page."""
     return render(request, WebPages.PRIVACY_POLICY)
+
 
 def register_user(request):
     """Guest User registers to use the app

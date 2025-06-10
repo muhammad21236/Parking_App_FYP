@@ -12,6 +12,14 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 from django.core.management.commands.runserver import Command as runserver
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY')
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -77,9 +85,11 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'PerfectParking.context_processors.google_maps_api_key',
             ],
         },
     },
+    
 ]
 
 WSGI_APPLICATION = 'PerfectParkingWebsite.wsgi.application'

@@ -209,25 +209,17 @@
   </div>
 </section>
 
-<script>
-  const locations = [
-    {% for parking_lot in parking_lots %}
-    {
-      lat: {{ parking_lot.latitude|default:"0" }},
-      lng: {{ parking_lot.longitude|default:"0" }},
-      name: "{{ parking_lot.name|escapejs }}",
-      address: "{{ parking_lot.address|escapejs }}",
-      id: {{ parking_lot.id }},
-      vacancy: {{ parking_lot.get_vacancy_rate|default:0 }},
-      isPaid: "{{ parking_lot.isPaidParking|yesno:'true,false' }}"
-    }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-  ];
+<!-- Safely pass data to JavaScript -->
+{{ locations_json|json_script:"locations-data" }}
 
+<script>
   function initMap() {
+    // Parse locations data from JSON
+    const locations = JSON.parse(document.getElementById('locations-data').textContent);
+    
     const map = new google.maps.Map(document.getElementById('map'), {
       zoom: 15,
-      center: locations.length > 0 ? { lat: locations[0].lat, lng: locations[0].lng } : { lat: 52.6593486, lng: -8.6246133 },
+      center: locations.length > 0 ? locations[0] : { lat: 52.6593486, lng: -8.6246133 },
       styles: [
         {
           featureType: "poi.parking",
@@ -239,11 +231,11 @@
 
     locations.forEach(location => {
       const marker = new google.maps.Marker({
-        position: { lat: location.lat, lng: location.lng },
+        position: location,
         map,
         title: location.name,
         icon: {
-          url: location.isPaid === 'true'
+          url: location.isPaid 
             ? "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
             : "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
           scaledSize: new google.maps.Size(32, 32)
@@ -286,7 +278,9 @@
 </script>
 
 <script
-  src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap"
+  src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initMap"
   async defer>
 </script>
+
+
 {% endblock %}

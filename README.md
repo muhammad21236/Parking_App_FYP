@@ -65,6 +65,28 @@ Built-in user accounts are:
 | admin1         | letmein    | admin | Built in admin account           |
 | parkingMonitor | Letmein1$  | user  | Account for parking monitor apps |
 
+## 🌍 Google Maps API Key Setup
+
+This project uses the **Google Maps JavaScript API** to display maps and location data.
+To keep your API key secure and out of the codebase, we use a `.env` file.
+
+### 📄 Add your API key to a `.env` file
+
+In the root of your project, create a `.env` file and add:
+
+```env
+GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+```
+
+### ⚠️ Important
+
+- **Never commit your real API key to GitHub.**
+- Make sure your `.gitignore` includes:
+
+```gitignore
+.env
+```
+
 ### Run the Client Parking Monitor
 
 For the client parking monitor to run, the server must be running.

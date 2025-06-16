@@ -1,4 +1,3 @@
-
 # Perfect Parking Video Monitor Client
 
 An app that allows users to find parking spots in the city of Limerick for my FYP.
@@ -11,19 +10,17 @@ An app that allows users to find parking spots in the city of Limerick for my FY
 
 1. Clone the repository
 
-    ```bash
-    git clone https://github.com/rhysquilter/perfect-parking-fyp.git
-    ```
-
+   ```bash
+   git clone https://github.com/muhammad21236/Parking_App_FYP.git
+   ```
 2. Install dependencies
 
-    ```py
-    pip install -r PerfectParkingClient/requirements.txt
-    ```
-
+   ```py
+   pip install -r PerfectParkingClient/requirements.txt
+   ```
 3. Run the app
-    Open VS Code and run the app by pressing the `F5` Key or  
-    Open a terminal and run the following command:
+   Open VS Code and run the app by pressing the `F5` Key or
+   Open a terminal and run the following command:
 
 ## Orignal Project Readme: Parking Space Detection in OpenCV
 
@@ -46,6 +43,7 @@ I'll start with an overview, then talk about my process, and end with some ideas
 The above link takes you to a video of the parking space detection program in action.
 
 To run:
+
 ```python
 python main.py --image images/parking_lot_1.png --data data/coordinates_1.yml --video videos/parking_lot_1.mp4 --start-frame 400
 ```
@@ -53,12 +51,11 @@ python main.py --image images/parking_lot_1.png --data data/coordinates_1.yml --
 Program flow is as follows:
 
 - User inputs file name for a video, a still image from the video, and a path for the output file of parking space coordinates.
-
 - User clicks 4 corners for each spot they want tracked. Presses 'q' when all desired spots are marked.
 - Video begins with the user provided boxes overlayed the video. Occupied spots initialized with red boxes, available spots with green.
-  
-    - Car leaves a space, the red box turns green.
-    - Car drives into a free space, the green box turns red.
+
+  - Car leaves a space, the red box turns green.
+  - Car drives into a free space, the green box turns red.
 
 The data on the entering and exiting of these cars can be used for a number of purposes: closest spot detection, analytics on parking lot usage, and for those counters outside of parking garages that tell you how many cars are on each level (to name a few).
 
@@ -126,9 +123,6 @@ for x1,y1,x2,y2 in lines[0]:
 
 ![Hough_transform](https://s3-us-west-2.amazonaws.com/parkinglot-opencv/s_line.png)
 
-
-
-
 Well that wasn't quite what I expected.
 
 I experimented a bit with the hough line, but toggling the parameters kept getting me the same one line.
@@ -151,7 +145,7 @@ If my program wasn't able to detect parking spots on it's own, maybe it was reas
 
 Now, the goal was to find a way to click on the parking lot image and to store the 4 points that made up a parking space for all of the spaces in the lot.
 
-I discovered that I could do this using a [mouse as a "paintbrush"](https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_mouse_handling/py_mouse_handling.html)
+I discovered that I could do this using a [mouse as a &#34;paintbrush&#34;](https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_gui/py_mouse_handling/py_mouse_handling.html)
 
 After some calculations for the center of the rectangle (to label each space), I got this:
 
@@ -172,5 +166,3 @@ Check out [the code](https://github.com/olgarose/ParkingLot) for more!
 - Hook up a webcam to a Raspberry Pi and have live parking monitoring at home!
 - [Transform parking lot video to have overview perspective](http://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_geometric_transformations/py_geometric_transformations.html) (for clearer rectangles)
 - Experiment with [HOG descriptors](https://gurus.pyimagesearch.com/lesson-sample-histogram-of-oriented-gradients-and-car-logo-recognition/) to detect people or other objects of interest
-
-
